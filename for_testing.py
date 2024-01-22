@@ -11,33 +11,15 @@ class Bullet:
         self.modifyers =  [1, 1]
         x_lengh = self.current_pos[0] - self.end_pos[0]
         y_lengh = self.current_pos[1] - self.end_pos[1]
-        if x_lengh < 0:
-            x_lengh *= -1
-        if y_lengh < 0:
-            y_lengh *= -1
-        if x_lengh > y_lengh:
-            self.modifyers[0] += x_lengh // y_lengh
-        if x_lengh < y_lengh:
-            self.modifyers[1] += y_lengh // x_lengh
-        while self.modifyers[0] > 9:
-            self.modifyers[0] -= 1
-        while self.modifyers[1] > 9:
-            self.modifyers[1] -= 1
+        self.y_x = y_lengh / x_lengh
+
         
         
     def render(self, screen):
         for i in range(10 - max(self.modifyers)):
             pygame.draw.circle(screen, ("green"), (self.current_pos[0], self.current_pos[1]), 5)
-            for i in range(self.modifyers[0]):
-                if self.current_pos[0] > self.end_pos[0]:
-                    self.current_pos[0] -= 1 
-                if self.current_pos[0] < self.end_pos[0]:
-                    self.current_pos[0] += 1
-            for i in range(self.modifyers[1]):
-                if self.current_pos[1] > self.end_pos[1]:
-                    self.current_pos[1] -= 1 
-                if self.current_pos[1] < self.end_pos[1]:
-                    self.current_pos[1] += 1 
+            self.current_pos[0] += 1
+            self.current_pos[1] = int(self.y_x + self.current_pos[1])
             if self.current_pos[1] == self.end_pos[1] and self.current_pos[0] == self.end_pos[0]:
                 self.bullet_appear = False
 
