@@ -3,13 +3,56 @@ import math
 from copy import copy
 
 
+class Player:
+    def __init__(self, player_coords):
+        self.player_coords = player_coords
+        self.movement_speed = [0, 0]
+    
+    def player_movment(self, movement_button, movment_type):
+        if movment_type == pygame.KEYDOWN:
+            if movement_button == pygame.K_w:
+                movement_speed[1] -= 10
+            if movement_button == pygame.K_s:
+                movement_speed[1] += 10
+            if movement_button == pygame.K_a:
+                movement_speed[0] -= 10
+            if movement_button == pygame.K_d:
+                movement_speed[0] += 10
+        elif movment_type == pygame.KEYUP:
+            if movement_button == pygame.K_w:
+                movement_speed[1] += 10
+            if movement_button == pygame.K_s:
+                movement_speed[1] -= 10
+            if movement_button == pygame.K_a:
+                movement_speed[0] += 10
+            if movement_button == pygame.K_d:
+                movement_speed[0] -= 10
+    
+    def player_render(self, screen):
+        pygame.draw.circle(screen, ("blue"), self.player_coords, 20)
+
+class Boss:
+    def __init__(self, boss_coords):
+        self.boss_coords = boss_coords
+    
+    def boss_movement(self):
+        if player.player_coords[0] > self.boss_coords[0]:
+            self.boss_coords[0] += 2
+        elif player.player_coords[0] < self.boss_coords[0]:
+            self.boss_coords[0] -= 2
+        if player.player_coords[1] > self.boss_coords[1]:
+            self.boss_coords[1] += 2
+        elif player.player_coords[1] < self.boss_coords[1]:
+            self.boss_coords[1] -= 2
+    
+    def boss_render(self, screen):
+        pygame.draw.circle(screen, ("green"), self.boss_coords, 20)
 
 class Bullet:
     def __init__(self, current_pos, end_pos):
         self.current_pos = current_pos.copy()
         self.end_pos = end_pos
         self.bullet_appear = True
-        self.modifyers =  [1, 1]
         self.lifetime = 60
         x_lengh = self.current_pos[0] - self.end_pos[0]
         y_lengh = self.current_pos[1] - self.end_pos[1]
@@ -35,8 +78,6 @@ class Bullet:
         if self.current_pos[1] == self.end_pos[1] and self.current_pos[0] == self.end_pos[0]:
             self.bullet_appear = False
 
-
-
 if __name__ == '__main__': 
     pygame.init()
     pygame.display.set_caption('Тестовое')
@@ -49,9 +90,11 @@ if __name__ == '__main__':
     fps = 60
     clock = pygame.time.Clock()
 
-    character_coordinates = [200, 200]
-    boss_coordinates = [500, 500]
+    start_player_coords = [200, 200]
+    start_boss_coordinates = [100, 100]
     movement_speed = [0, 0]
+    player = Player(start_player_coords)
+    boss = Boss(start_boss_coordinates)
     while running:
         screen.fill((0, 0, 0))
         for event in pygame.event.get():
@@ -60,49 +103,27 @@ if __name__ == '__main__':
             if event.type == pygame.MOUSEBUTTONDOWN:
                 end_pos = [event.pos[0], event.pos[1]]
                 bullet_appear = True
-                bullet = Bullet(character_coordinates, end_pos) 
+                bullet = Bullet(player.player_coords, end_pos) 
                 bullet_storage.append(bullet)          
 
             if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_w:
-                    movement_speed[1] -= 10
-                if event.key == pygame.K_s:
-                    movement_speed[1] += 10
-                if event.key == pygame.K_a:
-                    movement_speed[0] -= 10
-                if event.key == pygame.K_d:
-                    movement_speed[0] += 10
+                player.player_movment(event.key, event.type)
             if event.type == pygame.KEYUP:
-                if event.key == pygame.K_w:
-                    movement_speed[1] += 10
-                if event.key == pygame.K_s:
-                    movement_speed[1] -= 10
-                if event.key == pygame.K_a:
-                    movement_speed[0] += 10
-                if event.key == pygame.K_d:
-                    movement_speed[0] -= 10
+                player.player_movment(event.key, event.type)
 
-        character_coordinates[0] += movement_speed[0]
-        character_coordinates[1] += movement_speed[1]
+        player.player_coords[0] += movement_speed[0]
+        player.player_coords[1] += movement_speed[1]
+        player.player_render(screen)
 
-        if character_coordinates[0] > boss_coordinates[0]:
-            boss_coordinates[0] += 2
-        elif character_coordinates[0] < boss_coordinates[0]:
-            boss_coordinates[0] -= 2
-        if character_coordinates[1] > boss_coordinates[1]:
-            boss_coordinates[1] += 2
-        elif character_coordinates[1] < boss_coordinates[1]:
-            boss_coordinates[1] -= 2     
+        boss.boss_movement() 
+        boss.boss_render(screen)
+
         for elem in bullet_storage:
             if elem.bullet_appear == True:
                 elem.render(screen)
             else:
                 bullet_storage.remove(elem)
-        pygame.draw.circle(screen, (0, 0, 255), character_coordinates, 20)
-        pygame.draw.circle(screen, "green", boss_coordinates, 20)
         pygame.display.flip()
         clock.tick(50)
     pygame.quit()
 
-
-#pygame.draw.circle(screen, (0, 0, 255), character_coordinates, 20)
