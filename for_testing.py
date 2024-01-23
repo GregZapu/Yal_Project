@@ -51,6 +51,13 @@ class Boss:
 class Bullet:
     def __init__(self, current_pos, end_pos):
         self.current_pos = current_pos.copy()
+        self.effects_pos1 = self.current_pos
+        self.effects_pos2 = self.current_pos
+        self.effects_pos3 = self.current_pos
+        self.effects_pos4 = self.current_pos
+        self.effects_pos5 = self.current_pos
+        self.effects_pos6 = self.current_pos
+
         self.end_pos = end_pos
         self.bullet_appear = True
         self.lifetime = 60
@@ -66,12 +73,22 @@ class Bullet:
             self.an = math.asin(x_lengh / self.g)
         except:
             self.bullet_appear = False
+        pygame.draw.circle(screen, ("green"), (int(self.current_pos[0]), int(self.current_pos[1])), 5)
             
         
     def render(self, screen):
-        pygame.draw.circle(screen, ("green"), (int(self.current_pos[0]), int(self.current_pos[1])), 5)
         self.current_pos[0] += 1 * math.sin(self.an) * 5 * -1
         self.current_pos[1] += 1 * math.cos(self.an) * 5 * self.he
+        pygame.draw.circle(screen, ("green"), (int(self.current_pos[0]), int(self.current_pos[1])), 5)
+        self.effects_pos6 = self.effects_pos5
+        self.effects_pos5 = self.effects_pos4
+        self.effects_pos4 = self.effects_pos3
+        self.effects_pos3 = self.effects_pos2
+        self.effects_pos2 = self.effects_pos1
+        self.effects_pos1 = self.current_pos.copy()
+        pygame.draw.circle(screen, (105, 214, 130), (self.effects_pos3), 4)
+        pygame.draw.circle(screen, (121, 212, 142), (self.effects_pos5), 3)
+        pygame.draw.circle(screen, (148, 212, 163), (self.effects_pos6), 2)
         self.lifetime -= 1
         if self.lifetime == 0:
             self.bullet_appear = False
