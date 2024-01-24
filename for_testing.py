@@ -1,12 +1,13 @@
 import pygame
 import math
-from copy import copy
 
 
 class Player:
     def __init__(self, player_coords):
         self.player_coords = player_coords
         self.movement_speed = [0, 0]
+        self.player_health = 100
+        self.shot_reload = 0
     
     def player_movment(self, movement_button, movment_type):
         if movment_type == pygame.KEYDOWN:
@@ -29,11 +30,14 @@ class Player:
                 movement_speed[0] -= 10
     
     def player_render(self, screen):
+        if self.shot_reload > 0:
+            self.shot_reload -= 1
         pygame.draw.circle(screen, ("blue"), self.player_coords, 20)
 
 class Boss:
     def __init__(self, boss_coords):
         self.boss_coords = boss_coords
+        self.boss_helath = 1000
     
     def boss_movement(self):
         if player.player_coords[0] > self.boss_coords[0]:
@@ -49,7 +53,7 @@ class Boss:
         pygame.draw.circle(screen, ("green"), self.boss_coords, 20)
 
 class Bullet:
-    def __init__(self, current_pos, end_pos):
+    def __init__(self, current_pos, end_pos, bullet_owner):
         self.current_pos = current_pos.copy()
         self.effects_pos1 = self.current_pos
         self.effects_pos2 = self.current_pos
@@ -57,6 +61,7 @@ class Bullet:
         self.effects_pos4 = self.current_pos
         self.effects_pos5 = self.current_pos
         self.effects_pos6 = self.current_pos
+        self.bullet_owner = bullet_owner
 
         self.end_pos = end_pos
         self.bullet_appear = True
@@ -94,6 +99,10 @@ class Bullet:
             self.bullet_appear = False
         if self.current_pos[1] == self.end_pos[1] and self.current_pos[0] == self.end_pos[0]:
             self.bullet_appear = False
+        if self.current_pos[0] - boss.boss_coords[0] >= -10 and self.current_pos[0] - boss.boss_coords[0] <= 10:
+            if self.current_pos[1] - boss.boss_coords[1] >= -10 and self.current_pos[1] - boss.boss_coords[1] <= 10:
+                self.bullet_appear = False
+                boss.boss_helath -= 15
 
 if __name__ == '__main__': 
     pygame.init()
@@ -117,15 +126,16 @@ if __name__ == '__main__':
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
-            if event.type == pygame.MOUSEBUTTONDOWN:
-                end_pos = [event.pos[0], event.pos[1]]
-                bullet_appear = True
-                bullet = Bullet(player.player_coords, end_pos) 
-                bullet_storage.append(bullet)          
 
-            if event.type == pygame.KEYDOWN:
-                player.player_movment(event.key, event.type)
-            if event.type == pygame.KEYUP:
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                if player.shot_reload == 0:
+                    end_pos = [event.pos[0], event.pos[1]]
+                    bullet_appear = True
+                    bullet = Bullet(player.player_coords, end_pos, player) 
+                    bullet_storage.append(bullet)
+                    player.shot_reload = 100
+
+            if event.type == pygame.KEYDOWN or event.type == pygame.KEYUP:
                 player.player_movment(event.key, event.type)
 
         player.player_coords[0] += movement_speed[0]
