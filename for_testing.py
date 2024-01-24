@@ -126,7 +126,7 @@ class Bullet:
         if self.current_pos[0] - boss.boss_coords[0] >= -10 and self.current_pos[0] - boss.boss_coords[0] <= 10 and self.bullet_owner == player:
             if self.current_pos[1] - boss.boss_coords[1] >= -10 and self.current_pos[1] - boss.boss_coords[1] <= 10:
                 self.bullet_appear = False
-                boss.boss_helath -= 15
+                boss.boss_health -= 15
         if self.current_pos[0] - player.player_coords[0] >= -10 and self.current_pos[0] - player.player_coords[0] <= 10 and self.bullet_owner == boss:
             if self.current_pos[1] - player.player_coords[1] >= -10 and self.current_pos[1] - player.player_coords[1] <= 10:
                 self.bullet_appear = False
