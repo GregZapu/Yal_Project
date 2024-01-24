@@ -10,7 +10,11 @@ class info_bar:
 
     def render(self, screen):
         if self.entity == boss:
-            health_lenth = 494 *  boss.boss_helath / 1000
+            health_lenth = 494 *  boss.boss_health / 1000
+            pygame.draw.rect(screen, "white", (self.position[0], self.position[1], self.size[0], self.size[1]), width=3)
+            pygame.draw.rect(screen, "white", (self.position[0] + 3, self.position[1] + 3, health_lenth, self.size[1] - 6), width=0)
+        if self.entity == player:
+            health_lenth = 94 *  player.player_health / 100
             pygame.draw.rect(screen, "white", (self.position[0], self.position[1], self.size[0], self.size[1]), width=3)
             pygame.draw.rect(screen, "white", (self.position[0] + 3, self.position[1] + 3, health_lenth, self.size[1] - 6), width=0)
 
@@ -50,7 +54,8 @@ class Player:
 class Boss:
     def __init__(self, boss_coords):
         self.boss_coords = boss_coords
-        self.boss_helath = 1000
+        self.boss_health = 1000
+        self.bullet_reload = 0
     
     def boss_movement(self):
         if player.player_coords[0] > self.boss_coords[0]:
@@ -64,6 +69,12 @@ class Boss:
     
     def boss_render(self, screen):
         pygame.draw.circle(screen, ("green"), self.boss_coords, 20)
+        if self.bullet_reload == 0:
+            self.bullet_reload = 600
+            bullet = Bullet(self.boss_coords, player.player_coords, boss)
+            bullet_storage.append(bullet)
+        else:
+            self.bullet_reload -= 1
 
 class Bullet:
     def __init__(self, current_pos, end_pos, bullet_owner):
@@ -112,10 +123,14 @@ class Bullet:
             self.bullet_appear = False
         if self.current_pos[1] == self.end_pos[1] and self.current_pos[0] == self.end_pos[0]:
             self.bullet_appear = False
-        if self.current_pos[0] - boss.boss_coords[0] >= -10 and self.current_pos[0] - boss.boss_coords[0] <= 10:
+        if self.current_pos[0] - boss.boss_coords[0] >= -10 and self.current_pos[0] - boss.boss_coords[0] <= 10 and self.bullet_owner == player:
             if self.current_pos[1] - boss.boss_coords[1] >= -10 and self.current_pos[1] - boss.boss_coords[1] <= 10:
                 self.bullet_appear = False
                 boss.boss_helath -= 15
+        if self.current_pos[0] - player.player_coords[0] >= -10 and self.current_pos[0] - player.player_coords[0] <= 10 and self.bullet_owner == boss:
+            if self.current_pos[1] - player.player_coords[1] >= -10 and self.current_pos[1] - player.player_coords[1] <= 10:
+                self.bullet_appear = False
+                player.player_health -= 15
 
 if __name__ == '__main__': 
     pygame.init()
@@ -135,6 +150,7 @@ if __name__ == '__main__':
     player = Player(start_player_coords)
     boss = Boss(start_boss_coordinates)
     boss_healthbar = info_bar(boss, (500, 30), (200, 10))
+    player_healthbar = info_bar(player, (100, 10), (10, 10))
     while running:
         screen.fill((0, 0, 0))
         for event in pygame.event.get():
@@ -155,6 +171,7 @@ if __name__ == '__main__':
         player.player_coords[0] += movement_speed[0]
         player.player_coords[1] += movement_speed[1]
         player.player_render(screen)
+        player_healthbar.render(screen)
 
         boss.boss_movement() 
         boss.boss_render(screen)
