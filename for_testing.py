@@ -2,6 +2,19 @@ import pygame
 import math
 
 
+class info_bar:
+    def __init__(self, entity, size, left_up_pos):
+        self.entity = entity
+        self.size = size
+        self.position = left_up_pos
+
+    def render(self, screen):
+        if self.entity == boss:
+            health_lenth = 494 *  boss.boss_helath / 1000
+            pygame.draw.rect(screen, "white", (self.position[0], self.position[1], self.size[0], self.size[1]), width=3)
+            pygame.draw.rect(screen, "white", (self.position[0] + 3, self.position[1] + 3, health_lenth, self.size[1] - 6), width=0)
+
+
 class Player:
     def __init__(self, player_coords):
         self.player_coords = player_coords
@@ -121,6 +134,7 @@ if __name__ == '__main__':
     movement_speed = [0, 0]
     player = Player(start_player_coords)
     boss = Boss(start_boss_coordinates)
+    boss_healthbar = info_bar(boss, (500, 30), (200, 10))
     while running:
         screen.fill((0, 0, 0))
         for event in pygame.event.get():
@@ -144,6 +158,7 @@ if __name__ == '__main__':
 
         boss.boss_movement() 
         boss.boss_render(screen)
+        boss_healthbar.render(screen)
 
         for elem in bullet_storage:
             if elem.bullet_appear == True:
