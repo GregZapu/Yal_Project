@@ -10,9 +10,9 @@ class Button:
         self.position = left_up_pos
 
     def render(self, screen):
-        pygame.draw.rect(screen, "white", (self.position[0], self.position[1], self.size[0], self.size[1]), width=5)
+        pygame.draw.rect(screen, (color_for_locations, color_for_locations, color_for_locations), (self.position[0], self.position[1], self.size[0], self.size[1]), width=5)
         font = pygame.font.SysFont(None, 96)
-        img = font.render(self.text, True, "white")
+        img = font.render(self.text, True, (color_for_locations, color_for_locations, color_for_locations))
         screen.blit(img, (self.position[0] + 20, self.position[1] + 18))
 
 class info_bar:
@@ -69,6 +69,7 @@ class Player:
             if movement_button == pygame.K_e and current_location == "main":
                 if self.player_coords[0] >= 300 and self.player_coords[0] <= 500:
                     if self.player_coords[1] >= 200 and self.player_coords[1] <= 300:
+                        location_switch()
                         current_location = "battle"
 
                 
@@ -225,6 +226,13 @@ class Bullet:
                 player.player_health -= 15
 
 
+def location_switch():
+    global color_for_locations
+    while color_for_locations > 0:
+        color_for_locations -= 1
+        if current_location == "main":
+            main_menu()
+
 def main_menu():
     global running
     global bullet_appear
@@ -338,6 +346,7 @@ if __name__ == '__main__':
     boss_render = True
     bullet_storage = []
     current_location = "main"
+    color_for_locations = 255
 
     v = 20  # пикселей в секунду
     fps = 60
@@ -358,8 +367,10 @@ if __name__ == '__main__':
     while running:
         if current_location == "main":
             main_menu()
+            color_for_locations = 255
         if current_location == "battle":
             battle_field()
+            color_for_locations = 255
         if current_location == "store":
-            pass
+            color_for_locations = 255
     pygame.quit()
