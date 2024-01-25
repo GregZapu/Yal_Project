@@ -49,6 +49,7 @@ class Player:
         self.last_direction = [0, 0]   
     
     def player_movment(self, movement_button, movment_type):
+        global current_location
         if movment_type == pygame.KEYDOWN:
             if movement_button == pygame.K_w:
                 movement_speed[1] -= 5
@@ -64,6 +65,12 @@ class Player:
                 self.way[0] += 1
             if movement_button == pygame.K_SPACE:
                 self.aim_dash = True
+
+            if movement_button == pygame.K_e and current_location == "main":
+                if self.player_coords[0] >= 300 and self.player_coords[0] <= 500:
+                    if self.player_coords[1] >= 200 and self.player_coords[1] <= 300:
+                        current_location = "battle"
+
                 
         elif movment_type == pygame.KEYUP:
             if movement_button == pygame.K_w:
@@ -240,11 +247,8 @@ def main_menu():
             bullet_storage.append(bullet)
             player.shot_reload = 30
 
-    start_button = Button("Start", [200, 100], [300, 200])
     start_button.render(screen)
-    store_button = Button("Store", [200, 100], [300, 330])
     store_button.render(screen)
-    exit_button = Button("Exit", [200, 100], [300, 460])
     exit_button.render(screen)
 
     player.player_coords[0] += movement_speed[0]
@@ -333,6 +337,7 @@ if __name__ == '__main__':
     running = True
     boss_render = True
     bullet_storage = []
+    current_location = "main"
 
     v = 20  # пикселей в секунду
     fps = 60
@@ -346,6 +351,15 @@ if __name__ == '__main__':
     boss_healthbar = info_bar(boss, (500, 30), (200, 10))
     player_healthbar = info_bar(player, (100, 10), (10, 10))
 
+    start_button = Button("Start", [200, 100], [300, 200])
+    store_button = Button("Store", [200, 100], [300, 330])
+    exit_button = Button("Exit", [200, 100], [300, 460])
+
     while running:
-        main_menu()
+        if current_location == "main":
+            main_menu()
+        if current_location == "battle":
+            battle_field()
+        if current_location == "store":
+            pass
     pygame.quit()
