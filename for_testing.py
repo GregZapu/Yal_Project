@@ -3,6 +3,18 @@ import math
 import random
 
 
+class Button:
+    def __init__(self, text, size, left_up_pos):
+        self.text = text
+        self.size = size
+        self.position = left_up_pos
+
+    def render(self, screen):
+        pygame.draw.rect(screen, "white", (self.position[0], self.position[1], self.size[0], self.size[1]), width=5)
+        font = pygame.font.SysFont(None, 96)
+        img = font.render(self.text, True, "white")
+        screen.blit(img, (self.position[0] + 20, self.position[1] + 18))
+
 class info_bar:
     def __init__(self, entity, size, left_up_pos):
         self.entity = entity
@@ -23,7 +35,7 @@ class info_bar:
 
 class Player:
     def __init__(self, player_coords):
-        self.homing = True
+        self.homing = False
         self.player_coords = player_coords
         self.movement_speed = [0, 0]
         self.player_health = 45
@@ -83,9 +95,9 @@ class Boss:
     def __init__(self, boss_coords):
         self.boss_coords = boss_coords
         self.boss_health = 500
-        self.bullet_reload = 0
+        self.bullet_reload = 300
         self.bullet_spread = 0.1
-        self.bullet_life_time = 200
+        self.bullet_life_time = 100
         self.r = 1
         self.y_inert = 0
         self.x_inert = 0
@@ -205,7 +217,113 @@ class Bullet:
                 self.bullet_appear = False
                 player.player_health -= 15
 
+
+def main_menu():
+    global running
+    global bullet_appear
+    global boss_render
+    
+    screen.fill((0, 0, 0))
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            running = False
+        if event.type == pygame.KEYDOWN or event.type == pygame.KEYUP:
+            player.player_movment(event.key, event.type)
+    pressed = pygame.mouse.get_pressed()
+    pos = pygame.mouse.get_pos()
+    if pressed[0]:
+        if player.shot_reload == 0:
+                
+            end_pos = [pos[0], pos[1]]
+            bullet_appear = True
+            bullet = Bullet(player.player_coords, end_pos, player) 
+            bullet_storage.append(bullet)
+            player.shot_reload = 30
+
+    start_button = Button("Start", [200, 100], [300, 200])
+    start_button.render(screen)
+    store_button = Button("Store", [200, 100], [300, 330])
+    store_button.render(screen)
+    exit_button = Button("Exit", [200, 100], [300, 460])
+    exit_button.render(screen)
+
+    player.player_coords[0] += movement_speed[0]
+    player.player_coords[1] += movement_speed[1]
+    player.player_render(screen)
+
+
+    if not player.way == [0, 0]:
+        p = player.way[::]
+        player.movement_direction_history.append(p)
+
+        player.movement_direction_history = player.movement_direction_history[-5:]
+
+    player.last_direction = player.movement_direction_history[-3]
+
+            
+    if player.aim_dash:
+        pygame.draw.circle(screen, ("white"), (player.player_coords[0] + 140 * player.last_direction[0], player.player_coords[1] + 140 * player.last_direction[1]), 6)
+    for elem in bullet_storage:
+        if elem.bullet_appear == True:
+            elem.render(screen)
+        else:
+            bullet_storage.remove(elem)
+
+    pygame.display.flip()
+    clock.tick(50)
+
+
+def battle_field():
+    global running
+    global bullet_appear
+    global boss_render
+    screen.fill((0, 0, 0))
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            running = False
+        if event.type == pygame.KEYDOWN or event.type == pygame.KEYUP:
+            player.player_movment(event.key, event.type)
+    pressed = pygame.mouse.get_pressed()
+    pos = pygame.mouse.get_pos()
+    if pressed[0]:
+        if player.shot_reload == 0:
+                
+            end_pos = [pos[0], pos[1]]
+            bullet_appear = True
+            bullet = Bullet(player.player_coords, end_pos, player) 
+            bullet_storage.append(bullet)
+            player.shot_reload = 30
         
+    player.player_coords[0] += movement_speed[0]
+    player.player_coords[1] += movement_speed[1]
+    player.player_render(screen)
+    player_healthbar.render(screen)
+        
+    if boss_render == True:
+        boss.boss_movement() 
+        boss.boss_render(screen)
+        boss_healthbar.render(screen)
+    if boss.boss_health <= 0:
+        boss_render = False
+
+    if not player.way == [0, 0]:
+        p = player.way[::]
+        player.movement_direction_history.append(p)
+
+        player.movement_direction_history = player.movement_direction_history[-5:]
+
+    player.last_direction = player.movement_direction_history[-3]
+
+            
+    if player.aim_dash:
+        pygame.draw.circle(screen, ("white"), (player.player_coords[0] + 140 * player.last_direction[0], player.player_coords[1] + 140 * player.last_direction[1]), 6)
+    for elem in bullet_storage:
+        if elem.bullet_appear == True:
+            elem.render(screen)
+        else:
+            bullet_storage.remove(elem)
+    pygame.display.flip()
+    clock.tick(50)
 
 if __name__ == '__main__': 
     pygame.init()
@@ -227,50 +345,7 @@ if __name__ == '__main__':
     boss = Boss(start_boss_coordinates)
     boss_healthbar = info_bar(boss, (500, 30), (200, 10))
     player_healthbar = info_bar(player, (100, 10), (10, 10))
+
     while running:
-        screen.fill((0, 0, 0))
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                running = False
-            if event.type == pygame.KEYDOWN or event.type == pygame.KEYUP:
-                player.player_movment(event.key, event.type)
-        pressed = pygame.mouse.get_pressed()
-        pos = pygame.mouse.get_pos()
-        if pressed[0]:
-            if player.shot_reload == 0:
-                
-                end_pos = [pos[0], pos[1]]
-                bullet_appear = True
-                bullet = Bullet(player.player_coords, end_pos, player) 
-                bullet_storage.append(bullet)
-                player.shot_reload = 30
-        
-        player.player_coords[0] += movement_speed[0]
-        player.player_coords[1] += movement_speed[1]
-        player.player_render(screen)
-        player_healthbar.render(screen)
-        if boss_render == True:
-            boss.boss_movement() 
-            boss.boss_render(screen)
-            boss_healthbar.render(screen)
-        if boss.boss_health <= 0:
-            boss_render = False
-        if not player.way == [0, 0]:
-            p = player.way[::]
-            player.movement_direction_history.append(p)
-
-            player.movement_direction_history = player.movement_direction_history[-5:]
-
-        player.last_direction = player.movement_direction_history[-3]
-
-            
-        if player.aim_dash:
-                pygame.draw.circle(screen, ("white"), (player.player_coords[0] + 140 * player.last_direction[0], player.player_coords[1] + 140 * player.last_direction[1]), 6)
-        for elem in bullet_storage:
-            if elem.bullet_appear == True:
-                elem.render(screen)
-            else:
-                bullet_storage.remove(elem)
-        pygame.display.flip()
-        clock.tick(50)
+        main_menu()
     pygame.quit()
