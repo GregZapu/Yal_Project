@@ -21,11 +21,11 @@ class info_bar:
         self.size = size
         self.position = left_up_pos
 
-    def render(self, screen):
+    def render(self, screen, current_position):
         if self.entity == boss:
-            health_lenth = 494 *  boss.boss_health / 500
-            pygame.draw.rect(screen, "white", (self.position[0], self.position[1], self.size[0], self.size[1]), width=3)
-            pygame.draw.rect(screen, "white", (self.position[0] + 3, self.position[1] + 3, health_lenth, self.size[1] - 6), width=0)
+            health_lenth = 84 *  boss.boss_health / 500
+            pygame.draw.rect(screen, "white", (current_position[0] - 55, current_position[1] - 55, self.size[0], self.size[1]), width=3)
+            pygame.draw.rect(screen, "white", (current_position[0] - 52, current_position[1] - 52, health_lenth, self.size[1] - 6), width=0)
 
         if self.entity == player:
             health_lenth = 94 *  player.player_health / 45
@@ -153,6 +153,10 @@ class Boss:
             bullet_storage.append(bullet)
         else:
             self.bullet_reload -= 1
+        if boss.boss_coords[0] >= player.player_coords[0]:
+            boss_left_group.draw(screen)
+        else:
+            boss_right_group.draw(screen)
 
 class Bullet:
     def __init__(self, current_pos, end_pos, bullet_owner, ang_ch=0, size1=6):
@@ -313,12 +317,12 @@ def battle_field():
     player.player_coords[0] += movement_speed[0]
     player.player_coords[1] += movement_speed[1]
     player.player_render(screen)
-    player_healthbar.render(screen)
+    player_healthbar.render(screen, player.player_coords)
         
     if boss_render == True:
         boss.boss_movement() 
         boss.boss_render(screen)
-        boss_healthbar.render(screen)
+        boss_healthbar.render(screen, boss.boss_coords)
     if boss.boss_health <= 0:
         boss_render = False
 
@@ -338,10 +342,6 @@ def battle_field():
             elem.render(screen)
         else:
             bullet_storage.remove(elem)
-    if boss.boss_coords[0] >= player.player_coords[0]:
-        boss_left_group.draw(screen)
-    else:
-        boss_right_group.draw(screen)
     pygame.display.flip()
     clock.tick(50)
 
@@ -365,7 +365,7 @@ if __name__ == '__main__':
     movement_speed = [0, 0]
     player = Player(start_player_coords)
     boss = Boss(start_boss_coordinates)
-    boss_healthbar = info_bar(boss, (500, 30), (200, 10))
+    boss_healthbar = info_bar(boss, (90, 10), (200, 10))
     player_healthbar = info_bar(player, (100, 10), (10, 10))
 
     start_button = Button("Start", [200, 100], [300, 200])
