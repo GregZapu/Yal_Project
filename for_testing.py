@@ -10,7 +10,9 @@ class Button:
         self.position = left_up_pos
 
     def render(self, screen):
-        pygame.draw.rect(screen, (color_for_locations, color_for_locations, color_for_locations), (self.position[0], self.position[1], self.size[0], self.size[1]), width=5)
+        if player.player_coords[0] >= self.position[0] and player.player_coords[0] < self.position[0] + self.size[0]:
+            if player.player_coords[1] >= self.position[1] and player.player_coords[1] < self.position[1] + self.size[1]:
+                pygame.draw.rect(screen, (color_for_locations, color_for_locations, color_for_locations), (self.position[0], self.position[1], self.size[0], self.size[1]), width=5)
         font = pygame.font.SysFont(None, 96)
         img = font.render(self.text, True, (color_for_locations, color_for_locations, color_for_locations))
         screen.blit(img, (self.position[0] + 20, self.position[1] + 18))
@@ -50,6 +52,7 @@ class Player:
     
     def player_movment(self, movement_button, movment_type):
         global current_location
+        global running
         if movment_type == pygame.KEYDOWN:
             if movement_button == pygame.K_w:
                 movement_speed[1] -= 5
@@ -66,13 +69,28 @@ class Player:
             if movement_button == pygame.K_SPACE:
                 self.aim_dash = True
 
-            if movement_button == pygame.K_e and current_location == "main":
-                if self.player_coords[0] >= 300 and self.player_coords[0] <= 500:
-                    if self.player_coords[1] >= 200 and self.player_coords[1] <= 300:
-                        location_switch()
-                        current_location = "battle"
-
-                
+            if movement_button == pygame.K_e:
+                if current_location == "main":
+                    if self.player_coords[0] >= 300 and self.player_coords[0] <= 500:
+                        if self.player_coords[1] >= 200 and self.player_coords[1] <= 300:
+                            location_switch()
+                            current_location = "battle"
+                if current_location == "main":
+                    if self.player_coords[0] >= 300 and self.player_coords[0] <= 500:
+                        if self.player_coords[1] >= 460 and self.player_coords[1] <= 560:
+                            location_switch()
+                            running = False
+                if current_location == "main":
+                    if self.player_coords[0] >= 300 and self.player_coords[0] <= 500:
+                        if self.player_coords[1] >= 330 and self.player_coords[1] <= 430:
+                            location_switch()
+                            current_location = "store"
+                if current_location == "start":
+                    if self.player_coords[0] >= 85 and self.player_coords[0] <= 715:
+                        if self.player_coords[1] >= 350 and self.player_coords[1] <= 450:
+                            location_switch()
+                            current_location = "main"
+             
         elif movment_type == pygame.KEYUP:
             if movement_button == pygame.K_w:
                 movement_speed[1] += 5
@@ -240,6 +258,58 @@ def location_switch():
         color_for_locations -= 1
         if current_location == "main":
             main_menu()
+        if current_location == "start":
+            start_location()
+
+
+def start_location():
+    global running
+    global bullet_appear
+    global boss_render
+    
+    screen.fill((0, 0, 0))
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            running = False
+        if event.type == pygame.KEYDOWN or event.type == pygame.KEYUP:
+            player.player_movment(event.key, event.type)
+    pressed = pygame.mouse.get_pressed()
+    pos = pygame.mouse.get_pos()
+    if pressed[0]:
+        if player.shot_reload == 0:
+                
+            end_pos = [pos[0], pos[1]]
+            bullet_appear = True
+            bullet = Bullet(player.player_coords, end_pos, player) 
+            bullet_storage.append(bullet)
+            player.shot_reload = 30
+
+    first_button.render(screen)
+
+    player.player_coords[0] += movement_speed[0]
+    player.player_coords[1] += movement_speed[1]
+    player.player_render(screen)
+
+
+    if not player.way == [0, 0]:
+        p = player.way[::]
+        player.movement_direction_history.append(p)
+
+        player.movement_direction_history = player.movement_direction_history[-5:]
+
+    player.last_direction = player.movement_direction_history[-3]
+
+            
+    if player.aim_dash:
+        pygame.draw.circle(screen, ("white"), (player.player_coords[0] + 140 * player.last_direction[0], player.player_coords[1] + 140 * player.last_direction[1]), 6)
+    for elem in bullet_storage:
+        if elem.bullet_appear == True:
+            elem.render(screen)
+        else:
+            bullet_storage.remove(elem)
+
+    pygame.display.flip()
+    clock.tick(50)
 
 def main_menu():
     global running
@@ -353,7 +423,7 @@ if __name__ == '__main__':
     running = True
     boss_render = True
     bullet_storage = []
-    current_location = "main"
+    current_location = "start"
     color_for_locations = 255
 
     v = 20  # пикселей в секунду
@@ -368,9 +438,11 @@ if __name__ == '__main__':
     boss_healthbar = info_bar(boss, (90, 10), (200, 10))
     player_healthbar = info_bar(player, (100, 10), (10, 10))
 
+    first_button = Button("Press E to interact", [630, 100], [85, 350])
     start_button = Button("Start", [200, 100], [300, 200])
     store_button = Button("Store", [200, 100], [300, 330])
     exit_button = Button("Exit", [200, 100], [300, 460])
+
     # спрайты
     boss_left_group = pygame.sprite.Group()
     boss_right_group = pygame.sprite.Group()
@@ -387,6 +459,9 @@ if __name__ == '__main__':
     boss_right_group.add(boss_right)
 
     while running:
+        if current_location == "start":
+            start_location()
+            color_for_locations = 255
         if current_location == "main":
             main_menu()
             color_for_locations = 255
