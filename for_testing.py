@@ -138,7 +138,11 @@ class Boss:
 
     
     def boss_render(self, screen):
-        pygame.draw.circle(screen, ("green"), self.boss_coords, 50)
+        boss_right.rect.x = self.boss_coords[0] - 45
+        boss_right.rect.y = self.boss_coords[1] - 45
+        boss_left.rect.x = self.boss_coords[0] - 45
+        boss_left.rect.y = self.boss_coords[1] - 45
+        #pygame.draw.circle(screen, ("green"), self.boss_coords, 50)
         if self.bullet_reload == 0:
             self.bullet_reload = 60
             bullet = Bullet(self.boss_coords, player.player_coords, boss)
@@ -334,6 +338,10 @@ def battle_field():
             elem.render(screen)
         else:
             bullet_storage.remove(elem)
+    if boss.boss_coords[0] >= player.player_coords[0]:
+        boss_left_group.draw(screen)
+    else:
+        boss_right_group.draw(screen)
     pygame.display.flip()
     clock.tick(50)
 
@@ -363,6 +371,20 @@ if __name__ == '__main__':
     start_button = Button("Start", [200, 100], [300, 200])
     store_button = Button("Store", [200, 100], [300, 330])
     exit_button = Button("Exit", [200, 100], [300, 460])
+    # спрайты
+    boss_left_group = pygame.sprite.Group()
+    boss_right_group = pygame.sprite.Group()
+    boss_left = pygame.sprite.Sprite()
+    boss_right = pygame.sprite.Sprite()
+
+    boss_left.image = pygame.image.load("Sprite_boss_left_for_pj.png")
+    boss_right.image = pygame.image.load("Sprite_boss_right_for_pj.png")
+
+    boss_left.rect = boss_left.image.get_rect()
+    boss_right.rect = boss_right.image.get_rect()
+
+    boss_left_group.add(boss_left)
+    boss_right_group.add(boss_right)
 
     while running:
         if current_location == "main":
