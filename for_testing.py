@@ -48,7 +48,10 @@ class Player:
         self.way = [0, 0]
         self.aim_dash = False
         self.movement_direction_history = [[0,0], [0,0], [0,0], [0,0], [0,0], [0,0]]
-        self.last_direction = [0, 0]   
+        self.last_direction = [0, 0]
+        self.sprite_counter = 0   
+        self.lookng_way = "right"
+        self.keys = []
     
     def player_movment(self, movement_button, movment_type):
         global current_location
@@ -107,15 +110,62 @@ class Player:
             if movement_button == pygame.K_SPACE:
                 self.aim_dash = False
                 for i in range(1, 14):
-                    pygame.draw.circle(screen, (0,0,112), (self.player_coords[0] + 10 * i * self.last_direction[0], self.player_coords[1] + 10 * i * self.last_direction [1]), 15)
+                    pygame.draw.circle(screen, ("white"), (self.player_coords[0] + 10 * i * self.last_direction[0], self.player_coords[1] + 10 * i * self.last_direction [1]), 15)
                 
                 self.player_coords[0] += 140 * self.last_direction[0]
                 self.player_coords[1] += 140 * self.last_direction[1]
+            self.keys = pygame.key.get_pressed()
     
     def player_render(self, screen):
         if self.shot_reload > 0:
             self.shot_reload -= 1
-        pygame.draw.circle(screen, ("blue"), self.player_coords, 20)
+        if player.player_coords[0] > 775:
+            player.player_coords[0] = 775
+        if player.player_coords[1] > 775:
+            player.player_coords[1] = 775
+        if player.player_coords[0] < 35:
+            player.player_coords[0] = 35
+        if player.player_coords[1] < 35:
+            player.player_coords[1] = 35
+        self.sprite_counter += 1
+        if movement_speed[0] > 0 or movement_speed[0] == 0 and self.lookng_way == "right"  and movement_speed[1] != 0:
+            self.lookng_way = "right"
+            if self.sprite_counter <= 10:
+                player_right_stand.rect.x = player.player_coords[0] - 25
+                player_right_stand.rect.y = player.player_coords[1] - 30
+                player_right_stand_group.draw(screen)
+            elif self.sprite_counter > 10 and self.sprite_counter <= 20:
+                player_right_walk1.rect.x = player.player_coords[0] - 25
+                player_right_walk1.rect.y = player.player_coords[1] - 30
+                player_right_walk1_group.draw(screen)
+            elif self.sprite_counter > 20 and self.sprite_counter <= 30:
+                player_right_walk2.rect.x = player.player_coords[0] - 25
+                player_right_walk2.rect.y = player.player_coords[1] - 30
+                player_right_walk2_group.draw(screen)
+        if movement_speed[0] < 0 or movement_speed[0] == 0 and self.lookng_way == "left" and movement_speed[1] != 0:
+            self.lookng_way = "left"
+            if self.sprite_counter <= 10:
+                player_left_stand.rect.x = player.player_coords[0] - 25
+                player_left_stand.rect.y = player.player_coords[1] - 30
+                player_left_stand_group.draw(screen)
+            elif self.sprite_counter > 10 and self.sprite_counter <= 20:
+                player_left_walk1.rect.x = player.player_coords[0] - 25
+                player_left_walk1.rect.y = player.player_coords[1] - 30
+                player_left_walk1_group.draw(screen)
+            elif self.sprite_counter > 20 and self.sprite_counter <= 30:
+                player_left_walk2.rect.x = player.player_coords[0] - 25
+                player_left_walk2.rect.y = player.player_coords[1] - 30
+                player_left_walk2_group.draw(screen)
+        if movement_speed[0] == 0 and self.lookng_way == "left" and movement_speed[1] == 0:
+            player_left_stand.rect.x = player.player_coords[0] - 25
+            player_left_stand.rect.y = player.player_coords[1] - 30
+            player_left_stand_group.draw(screen)
+        if movement_speed[0] == 0 and self.lookng_way == "right" and movement_speed[1] == 0:
+            player_right_stand.rect.x = player.player_coords[0] - 25
+            player_right_stand.rect.y = player.player_coords[1] - 30
+            player_right_stand_group.draw(screen)
+        if self.sprite_counter == 30:
+            self.sprite_counter = 0
 
 class Boss:
     def __init__(self, boss_coords):
@@ -136,7 +186,10 @@ class Boss:
             self.he = -1
         else:
             self.he = 1
-        self.yx = y_lengh / x_lengh
+        if x_lengh != 0:
+            self.yx = y_lengh / x_lengh
+        else:
+            self.yx = y_lengh / 1
         self.g = (y_lengh ** 2 + x_lengh ** 2) ** 0.5
         self.an = math.asin(x_lengh / self.g)
         if self.g < 650:
@@ -153,6 +206,15 @@ class Boss:
             self.y_inert /= self.inert_g / 6
         self.boss_coords[0] += self.x_inert + (1 * math.sin(self.an) * 5 * -1 * self.r * 0.6) 
         self.boss_coords[1] += self.y_inert + (math.cos(self.an) * 5 * self.he * self.r * 0.6) 
+
+        if boss.boss_coords[0] > 760:
+            boss.boss_coords[0] = 760
+        if boss.boss_coords[1] > 760:
+            boss.boss_coords[1] = 760
+        if boss.boss_coords[0] < 40:
+            boss.boss_coords[0] = 40
+        if boss.boss_coords[1] < 40:
+            boss.boss_coords[1] = 40
 
     
     def boss_render(self, screen):
@@ -254,8 +316,8 @@ class Bullet:
 
 def location_switch():
     global color_for_locations
-    while color_for_locations > 0:
-        color_for_locations -= 1
+    while color_for_locations > 1:
+        color_for_locations -= 2
         if current_location == "main":
             main_menu()
         if current_location == "start":
@@ -388,7 +450,7 @@ def battle_field():
     player.player_coords[1] += movement_speed[1]
     player.player_render(screen)
     player_healthbar.render(screen, player.player_coords)
-        
+
     if boss_render == True:
         boss.boss_movement() 
         boss.boss_render(screen)
@@ -446,15 +508,48 @@ if __name__ == '__main__':
     # спрайты
     boss_left_group = pygame.sprite.Group()
     boss_right_group = pygame.sprite.Group()
+
+    player_left_stand_group = pygame.sprite.Group()
+    player_right_stand_group = pygame.sprite.Group()
+    player_left_walk1_group = pygame.sprite.Group()
+    player_right_walk1_group = pygame.sprite.Group()
+    player_left_walk2_group = pygame.sprite.Group()
+    player_right_walk2_group = pygame.sprite.Group()
+
     boss_left = pygame.sprite.Sprite()
     boss_right = pygame.sprite.Sprite()
 
+    player_left_stand = pygame.sprite.Sprite()
+    player_right_stand = pygame.sprite.Sprite()
+    player_left_walk1 = pygame.sprite.Sprite()
+    player_right_walk1 = pygame.sprite.Sprite()
+    player_left_walk2 = pygame.sprite.Sprite()
+    player_right_walk2 = pygame.sprite.Sprite()
+
     boss_left.image = pygame.image.load("Sprite_boss_left_for_pj.png")
     boss_right.image = pygame.image.load("Sprite_boss_right_for_pj.png")
+    player_left_stand.image = pygame.image.load("Sprite_player_left_for_pj.png")
+    player_right_stand.image = pygame.image.load("Sprite_player_right_for_pj.png")
+    player_left_walk1.image = pygame.image.load("Sprite_player1_left_for_pj.png")
+    player_right_walk1.image = pygame.image.load("Sprite_player1_right_for_pj.png")
+    player_left_walk2.image = pygame.image.load("Sprite_player2_left_for_pj.png")
+    player_right_walk2.image = pygame.image.load("Sprite_player2_right_for_pj.png")
 
     boss_left.rect = boss_left.image.get_rect()
     boss_right.rect = boss_right.image.get_rect()
-
+    player_left_stand.rect = player_left_stand.image.get_rect()
+    player_right_stand.rect = player_right_stand.image.get_rect()
+    player_left_walk1.rect = player_left_walk1.image.get_rect()
+    player_right_walk1.rect = player_left_walk1.image.get_rect()
+    player_left_walk2.rect = player_left_walk1.image.get_rect()
+    player_right_walk2.rect = player_left_walk1.image.get_rect()
+    
+    player_left_stand_group.add(player_left_stand)
+    player_right_stand_group.add(player_right_stand)
+    player_left_walk1_group.add(player_left_walk1)
+    player_right_walk1_group.add(player_right_walk1)
+    player_left_walk2_group.add(player_left_walk2)
+    player_right_walk2_group.add(player_right_walk2)
     boss_left_group.add(boss_left)
     boss_right_group.add(boss_right)
 
