@@ -4,18 +4,20 @@ import random
 
 
 class Button:
-    def __init__(self, text, size, left_up_pos):
+    def __init__(self, text, size, left_up_pos, font_size=96, distance=20):
+        self.distance = distance
         self.text = text
         self.size = size
         self.position = left_up_pos
+        self.font_size = font_size
 
     def render(self, screen):
         if player.player_coords[0] >= self.position[0] and player.player_coords[0] < self.position[0] + self.size[0]:
             if player.player_coords[1] >= self.position[1] and player.player_coords[1] < self.position[1] + self.size[1]:
                 pygame.draw.rect(screen, (color_for_locations, color_for_locations, color_for_locations), (self.position[0], self.position[1], self.size[0], self.size[1]), width=5)
-        font = pygame.font.SysFont(None, 96)
+        font = pygame.font.SysFont(None, self.font_size)
         img = font.render(self.text, True, (color_for_locations, color_for_locations, color_for_locations))
-        screen.blit(img, (self.position[0] + 20, self.position[1] + 18))
+        screen.blit(img, (self.position[0] + self.distance, self.position[1] + self.distance))
 
 class info_bar:
     def __init__(self, entity, size, left_up_pos):
@@ -93,7 +95,12 @@ class Player:
                         if self.player_coords[1] >= 350 and self.player_coords[1] <= 450:
                             location_switch()
                             current_location = "main"
-             
+                if current_location == "store":
+                    if self.player_coords[0] >= 30 and self.player_coords[0] <= 130:
+                        if self.player_coords[1] >= 730 and self.player_coords[1] <= 780:
+                            location_switch()
+                            current_location = "main"
+                                     
         elif movment_type == pygame.KEYUP:
             if movement_button == pygame.K_w:
                 movement_speed[1] += 5
@@ -322,6 +329,58 @@ def location_switch():
             main_menu()
         if current_location == "start":
             start_location()
+        if current_location == "store":
+            store_location()
+
+
+def store_location():
+    global running
+    global bullet_appear
+    global boss_render
+    
+    screen.fill((0, 0, 0))
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            running = False
+        if event.type == pygame.KEYDOWN or event.type == pygame.KEYUP:
+            player.player_movment(event.key, event.type)
+    pressed = pygame.mouse.get_pressed()
+    pos = pygame.mouse.get_pos()
+    if pressed[0]:
+        if player.shot_reload == 0:
+                
+            end_pos = [pos[0], pos[1]]
+            bullet_appear = True
+            bullet = Bullet(player.player_coords, end_pos, player) 
+            bullet_storage.append(bullet)
+            player.shot_reload = 30
+
+    store_exit_button.render(screen)
+
+    player.player_coords[0] += movement_speed[0]
+    player.player_coords[1] += movement_speed[1]
+    player.player_render(screen)
+
+
+    if not player.way == [0, 0]:
+        p = player.way[::]
+        player.movement_direction_history.append(p)
+
+        player.movement_direction_history = player.movement_direction_history[-5:]
+
+    player.last_direction = player.movement_direction_history[-3]
+
+            
+    if player.aim_dash:
+        pygame.draw.circle(screen, ("white"), (player.player_coords[0] + 140 * player.last_direction[0], player.player_coords[1] + 140 * player.last_direction[1]), 6)
+    for elem in bullet_storage:
+        if elem.bullet_appear == True:
+            elem.render(screen)
+        else:
+            bullet_storage.remove(elem)
+
+    pygame.display.flip()
+    clock.tick(50)
 
 
 def start_location():
@@ -504,6 +563,7 @@ if __name__ == '__main__':
     start_button = Button("Start", [200, 100], [300, 200])
     store_button = Button("Store", [200, 100], [300, 330])
     exit_button = Button("Exit", [200, 100], [300, 460])
+    store_exit_button = Button("Exit", [100, 50], [30, 730], 54, 10)
 
     # спрайты
     boss_left_group = pygame.sprite.Group()
@@ -564,5 +624,6 @@ if __name__ == '__main__':
             battle_field()
             color_for_locations = 255
         if current_location == "store":
+            store_location()
             color_for_locations = 255
     pygame.quit()
