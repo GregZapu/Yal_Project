@@ -1,6 +1,7 @@
 import pygame
 import math
 import random
+import sqlite3
 
 
 class Button:
@@ -44,11 +45,13 @@ class Player:
         self.movement_speed = [0, 0]
         self.player_health = 100
         self.shot_reload = 0
+        self.shot_coldoun = 30
         self.bullet_spread = 0.01
         self.bullet_life_time = 100
         self.bullet_speed = 2
         self.way = [0, 0]
         self.aim_dash = False
+        self.player_dash = False
         self.movement_direction_history = [[0,0], [0,0], [0,0], [0,0], [0,0], [0,0]]
         self.last_direction = [0, 0]
         self.sprite_counter = 0   
@@ -71,7 +74,7 @@ class Player:
             if movement_button == pygame.K_d:
                 movement_speed[0] += 5
                 self.way[0] += 1
-            if movement_button == pygame.K_SPACE:
+            if movement_button == pygame.K_SPACE and self.player_dash == True:
                 self.aim_dash = True
 
             if movement_button == pygame.K_e:
@@ -114,7 +117,7 @@ class Player:
             if movement_button == pygame.K_d:
                 movement_speed[0] -= 5
                 self.way[0] -= 1
-            if movement_button == pygame.K_SPACE:
+            if movement_button == pygame.K_SPACE and self.player_dash == True:
                 self.aim_dash = False
                 for i in range(1, 14):
                     pygame.draw.circle(screen, ("white"), (self.player_coords[0] + 10 * i * self.last_direction[0], self.player_coords[1] + 10 * i * self.last_direction [1]), 15)
@@ -178,7 +181,9 @@ class Boss:
     def __init__(self, boss_coords):
         self.boss_coords = boss_coords
         self.boss_health = 500
-        self.bullet_reload = 300
+        self.bullet_damage = 20
+        self.bullet_reload = 0
+        self.reload = 60
         self.bullet_spread = 0.1
         self.bullet_life_time = 100
         self.r = 1
@@ -231,7 +236,7 @@ class Boss:
         boss_left.rect.y = self.boss_coords[1] - 45
         #pygame.draw.circle(screen, ("green"), self.boss_coords, 50)
         if self.bullet_reload == 0:
-            self.bullet_reload = 60
+            self.bullet_reload = self.reload
             bullet = Bullet(self.boss_coords, player.player_coords, boss)
             bullet_storage.append(bullet)
             bullet = Bullet(self.boss_coords, player.player_coords, boss, 0.3)
@@ -318,7 +323,7 @@ class Bullet:
         if self.current_pos[0] - player.player_coords[0] >= -15 and self.current_pos[0] - player.player_coords[0] <= 15 and self.bullet_owner == boss:
             if self.current_pos[1] - player.player_coords[1] >= -15 and self.current_pos[1] - player.player_coords[1] <= 15:
                 self.bullet_appear = False
-                player.player_health -= 15
+                player.player_health -= boss.bullet_damage
 
 
 def location_switch():
@@ -353,7 +358,7 @@ def store_location():
             bullet_appear = True
             bullet = Bullet(player.player_coords, end_pos, player) 
             bullet_storage.append(bullet)
-            player.shot_reload = 30
+            player.shot_reload = player.shot_coldoun
 
     store_exit_button.render(screen)
 
@@ -403,7 +408,7 @@ def start_location():
             bullet_appear = True
             bullet = Bullet(player.player_coords, end_pos, player) 
             bullet_storage.append(bullet)
-            player.shot_reload = 30
+            player.shot_reload = player.shot_coldoun
 
     first_button.render(screen)
 
@@ -452,7 +457,7 @@ def main_menu():
             bullet_appear = True
             bullet = Bullet(player.player_coords, end_pos, player) 
             bullet_storage.append(bullet)
-            player.shot_reload = 30
+            player.shot_reload = player.shot_coldoun
 
     start_button.render(screen)
     store_button.render(screen)
@@ -503,7 +508,7 @@ def battle_field():
             bullet_appear = True
             bullet = Bullet(player.player_coords, end_pos, player) 
             bullet_storage.append(bullet)
-            player.shot_reload = 30
+            player.shot_reload = player.shot_coldoun
         
     player.player_coords[0] += movement_speed[0]
     player.player_coords[1] += movement_speed[1]
@@ -564,6 +569,25 @@ if __name__ == '__main__':
     store_button = Button("Store", [200, 100], [300, 330])
     exit_button = Button("Exit", [200, 100], [300, 460])
     store_exit_button = Button("Exit", [100, 50], [30, 730], 54, 10)
+
+    #работа с бд
+    con = sqlite3.connect("database_for_yal.sqlite")
+    cur = con.cursor()
+    player_result = cur.execute("""SELECT value FROM Player_stats""").fetchall()
+    boss_result = cur.execute("""SELECT value FROM Boss_stats""").fetchall()
+    player.player_health = player_result[0][0]
+    player.shot_coldoun = player_result[1][0]
+    player.bullet_spread = player_result[2][0]
+    player.bullet_life_time = player_result[3][0]
+    player.bullet_speed = player_result[4][0]
+    player.homing = player_result[5][0]
+    player.player_dash = player_result[6][0]
+    boss.boss_health = boss_result[0][0]
+    boss.bullet_damage = boss_result[2][0]
+    boss.reload = boss_result[3][0]
+    boss.bullet_life_time = boss_result[4][0]
+    boss.bullet_spread = boss_result[5][0]
+    boss.bullet_speed = boss_result[6][0]
 
     # спрайты
     boss_left_group = pygame.sprite.Group()
